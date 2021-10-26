@@ -587,6 +587,31 @@ void procesarincidente (char opcion [], Nodopoliza* lista)
     else
         cout << "No se encontro el archivo" << endl;
 }
+void ordenarLista(Nodopoliza *P)
+{
+     Nodopoliza *actual = NULL;
+     Nodopoliza *siguiente = NULL;
+     Polizas t;
+     actual = P;
+     while(actual->sgte != NULL)
+     {
+          siguiente = actual->sgte;
+
+          while(siguiente!=NULL)
+          {
+               if(actual->info.accidentes > siguiente->info.accidentes)
+               {
+                    t = siguiente->info;
+                    siguiente->info = actual->info;
+                    actual->info = t;
+               }
+               siguiente = siguiente->sgte;
+          }
+          actual = actual->sgte;
+          siguiente = actual->sgte;
+
+     }
+}
 int main()
 {
     Nodopoliza *lista = NULL;
@@ -600,6 +625,7 @@ int main()
     /*cargarincidentesprueba ();
     cargarpolizaprueba ();*/
     levantarPoliza (lista);
+    ordenarLista (lista);
     do
     {
         opcion = menu();
