@@ -402,39 +402,11 @@ void levantarPoliza(Nodopoliza *&a)
     fclose(f);
     return;
 }
-void levantarincidente1(NodoIncidente *&a)
+void levantarincidente(NodoIncidente *&a, char lote[])
 {
     FILE *f;
     incidente i;
-    f=fopen("lote1","r");
-    fread(&i,sizeof(incidente),1,f);
-    while (!feof(f))
-    {
-        ListaincidenteInsertarSiguiente(a,i);
-        fread(&i,sizeof(incidente),1,f);
-    }
-    fclose(f);
-    return;
-}
-void levantarincidente2(NodoIncidente *&a)
-{
-    FILE *f;
-    incidente i;
-    f=fopen("lote2","r");
-    fread(&i,sizeof(incidente),1,f);
-    while (!feof(f))
-    {
-        ListaincidenteInsertarSiguiente(a,i);
-        fread(&i,sizeof(incidente),1,f);
-    }
-    fclose(f);
-    return;
-}
-void levantarincidente3(NodoIncidente *&a)
-{
-    FILE *f;
-    incidente i;
-    f=fopen("lote3","r");
+    f=fopen(lote,"r");
     fread(&i,sizeof(incidente),1,f);
     while (!feof(f))
     {
@@ -520,72 +492,43 @@ void mostrarenCSV(Nodopoliza *lista)
     fclose(f);
     return;
 }
-void procesarincidente (char opcion [], Nodopoliza* lista)
+void procesarincidente (int opcion, Nodopoliza* lista)
 {
     FILE *Inc;
     FILE *canal;
+    char lote[10], aux[3];
     NodoIncidente *listainc = NULL;
     incidente i;
     Polizas p;
+
+    strcpy(lote, "lote");
+    sprintf(aux, "%d", opcion);
+    strcat(lote, aux);
+
     canal = fopen ("Procesados.BAK", "ab");
     if (canal)
     {
-            if (!strcmp(opcion,"1"))
+        Inc = fopen (lote,"rb");
+        levantarincidente(listainc, lote);
+        fread (&i,sizeof(incidente),1,Inc);
+        while (!feof(Inc))
+    {
+        if (Buscarpoliza(lista,i.Nropoliza))
         {
-            Inc = fopen ("lote1","rb");
-            levantarincidente1 (listainc);
-            fread (&i,sizeof(incidente),1,Inc);
-            while (!feof(Inc))
-        {
-            if (Buscarpoliza(lista,i.Nropoliza))
-            {
-                lista = Buscarpoliza(lista,i.Nropoliza);
-                lista ->info.accidentes = lista -> info.accidentes + 1;
-            }
-            fread (&i,sizeof(incidente),1,Inc);
-            fwrite (&i,sizeof (incidente),1,canal);
+            lista = Buscarpoliza(lista,i.Nropoliza);
+            lista ->info.accidentes = lista -> info.accidentes + 1;
+        }
+        fread (&i,sizeof(incidente),1,Inc);
+        fwrite (&i,sizeof (incidente),1,canal);
         }
         fclose (Inc);
-        }
-        if (!strcmp(opcion,"2"))
-        {
-            Inc = fopen ("lote2","rb");
-            Inc = fopen ("lote1","rb");
-            levantarincidente2 (listainc);
-            fread (&i,sizeof(incidente),1,Inc);
-            while (!feof(Inc))
-        {
-            if (Buscarpoliza(lista,i.Nropoliza))
-            {
-                lista = Buscarpoliza(lista,i.Nropoliza);
-                lista ->info.accidentes = lista -> info.accidentes + 1;
-            }
-            fread (&i,sizeof(incidente),1,Inc);
-            fwrite (&i,sizeof (incidente),1,canal);
-        }
-            fclose (Inc);
-        }
-        if (!strcmp(opcion,"3"))
-        {
-            Inc = fopen ("lote3","rb");
-            levantarincidente3 (listainc);
-            fread (&i,sizeof(incidente),1,Inc);
-            while (!feof(Inc))
-        {
-            if (Buscarpoliza(lista,i.Nropoliza))
-            {
-                lista = Buscarpoliza(lista,i.Nropoliza);
-                lista ->info.accidentes = lista -> info.accidentes + 1;
-            }
-            fread (&i,sizeof(incidente),1,Inc);
-            fwrite (&i,sizeof (incidente),1,canal);
-        }
-            fclose (Inc);
-        }
+
+    }
+    else {
+        cout << "No se encontro el archivo" << endl;
         fclose (canal);
     }
-    else
-        cout << "No se encontro el archivo" << endl;
+
 }
 void ordenarLista(Nodopoliza *P)
 {
@@ -625,7 +568,6 @@ int main()
     /*cargarincidentesprueba ();
     cargarpolizaprueba ();*/
     levantarPoliza (lista);
-    ordenarLista (lista);
     do
     {
         opcion = menu();
@@ -695,6 +637,7 @@ int main()
                     cout << "Se ha borrado correctamente" << endl;
                 break;
             case '4':
+                    ordenarLista (lista);
                     x = lista;
                     mostrarpolizas (x);
                 break;
@@ -703,7 +646,7 @@ int main()
                 mostrarenHTML (lista);
                 break;
             case '6':
-                char nrolote [3];
+                int nrolote;
                 cout << "Ingrese el numero de lote que desea procesar (1,2,3): " << endl;
                 cin >> nrolote;
                 procesarincidente (nrolote,lista);
